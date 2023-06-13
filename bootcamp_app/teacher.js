@@ -9,17 +9,18 @@ const pool = new Pool({
 
 const input = process.argv.splice(2);
 const month = input[0];
-const limit = input[1];
 
 pool.query(`
-SELECT students.id, students.name, cohorts.name as cohort_name
-FROM students
-JOIN cohorts on cohort_id = cohorts.id
-WHERE cohorts.name LIKE '%${month}%'
-LIMIT ${limit};
+SELECT DISTINCT teachers.name as teacher, cohorts.name as cohort
+FROM teachers
+JOIN assistance_requests ON teacher_id = teachers.id
+JOIN students ON student_id = students.id
+JOIN cohorts ON cohort_id = cohorts.id
+WHERE cohorts.name = '${month}'
+ORDER BY teacher;
 `)
 .then(res => {
   res.rows.forEach(user => {
-    console.log(`${user.name} has an id of ${user.id} and was in the ${user.cohort_name} cohort`);
+    console.log(`${user.cohort}: ${user.teacher}`);
   })
 }).catch(err => console.error('query error', err.stack));
